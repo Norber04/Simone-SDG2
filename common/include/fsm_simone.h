@@ -52,10 +52,19 @@ enum LEVELS {
 };
 
 typedef struct {
-    fsm_t f; 
-    
-    /* TODO students: complete the structure */
-
+    fsm_t               f;                                  /*!<Simone FSM  */
+    fsm_button_t        * p_fsm_button;                     /*!< Pointer to the button FSM */
+    fsm_keyboard_t      * p_fsm_keyboard;                   /*!< Pointer to the keyboard FSM */
+    fsm_rgb_light_t     * p_fsm_rgb_light;                  /*!< Pointer to the RGB light FSM */
+    rgb_color_t         seq_colors[SEQUENCE_LENGTH];        /*!< Sequence of colors */
+    uint8_t             seq_intensities[SEQUENCE_LENGTH];   /*!< Sequence of intensities */
+    uint8_t             level;                              /*!< Difficulty level of the game */
+    uint8_t             seq_idx;                            /*!< Index of the element of the sequence */
+    uint8_t 	        playback_idx;                       /*!< Index of the element of the sequence being played back */
+    uint8_t 	        player_idx;                         /*!< Index of the element of the sequence that the player has to input */
+    char 	            player_key;                         /*!< Key pressed by the player */
+    bool 	            playback_over;                      /*!< Indicate if the playback is over */
+    uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
 } fsm_simone_t;
 
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level);
