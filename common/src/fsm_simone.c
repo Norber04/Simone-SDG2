@@ -252,6 +252,51 @@ static bool check_any_key_pressed (fsm_t *p_this)
     return p_simone->p_fsm_keyboard->key_value != p_simone->p_fsm_keyboard->invalid_key;
 }
 
+/**
+ * @brief 	Check if the input feedback time has finished and if the pressed key is correct. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player key is equal to the light
+ * @return false 
+ */
+static bool check_input_valid (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*check if the input feedback has finished */
+    if (port_simone_get_timeout_status())
+    {
+        /*return true if the player key is equal to the light*/
+        if (p_simone->player_key == _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
+        {
+            return true;
+        }
+    }
+    return false;
+
+}
+
+/**
+ * @brief 	Check if the input feedback time has finished and if the pressed key is incorrect. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player key is different to the light
+ * @return false 
+ */
+static bool check_input_invalid (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*check if the input feedback has finished */
+    if (port_simone_get_timeout_status())
+    {
+        /*return false if the player key is equal to the light*/
+        if (p_simone->player_key != _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
+        {
+            return true;
+        }
+    }
+    return false;
+
+}
 
 /* State machine output or action functions */
 
@@ -520,6 +565,44 @@ static void do_capture_input (fsm_t *p_this)
 
     /*set the timeout for visual feedback*/
     port_simone_set_timer_timeout(SIMONE_TIME_VISUAL_FEEDBACK_MS);
+}
+
+/**
+ * @brief Handle a valid key press from the player. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+static void do_valid_key(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*set the light off*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,MAX_LEVEL_INTENSITY);
+    /*increase the player index */
+    p_simone->player_idx++;
+    /*set the key to invalid key*/
+    p_simone->p_fsm_keyboard->key_value = p_simone->p_fsm_keyboard->invalid_key;
+    /*reset the timer*/
+    port_simone_set_timer_timeout(SIMONE_TIME_WAIT_INPUT_MS);
+}
+
+/**
+ * @brief 	Handle an invalid key press from the player. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+static void do_game_over_invalid_key(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*set the light off*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,MAX_LEVEL_INTENSITY);
+    printf("[SIMONE][%ld] Game Over, you have pressed ", p_simone->player_key," and you should have pressed " ,_get_key_from_color(p_simone->seq_colors[p_simone->player_idx]), "\n");
+    /*reset params*/
+    p_simone->seq_idx=0;
+    p_simone->player_idx=0;
+    p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
+    /*stop timer and keyboard scan*/
+    port_simone_stop_timer();
+    fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 }
 
 static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
