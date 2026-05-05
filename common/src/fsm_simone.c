@@ -87,7 +87,7 @@ static void _add_color(fsm_simone_t *p_fsm_simone)
     uint8_t intensity = (rand() % (LEVEL_MAX_INTENSITY - min + 1)) + min;
 
     /*save the values in the arrays*/
-    if(p_fsm_simone->seq_idx = SEQUENCE_LENGTH)
+    if(p_fsm_simone->seq_idx == SEQUENCE_LENGTH)
     {
         p_fsm_simone->seq_idx = 0;
     }
@@ -173,7 +173,7 @@ static bool check_color_added(fsm_t *p_this)
 static bool check_playback_over (fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    return (p_simone->playback_idx<0 && port_simone_get_timeout_status());
+    return (p_simone->playback_idx>p_simone->seq_idx&& port_simone_get_timeout_status());
 }
 /**
  * @brief 	Check if the playback color timeout has occurred. 
@@ -378,7 +378,6 @@ static void do_stop_simone (fsm_t *p_this)
  */
 static void do_sleep_idle(fsm_t *p_this)
 {
-    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     port_system_sleep();
 }
 
@@ -396,7 +395,7 @@ static void do_playback (fsm_t *p_this)
     }
     /*reset the flag timer and stop the scan of the keyboard*/
     port_simone_set_timeout_status(false);
-    port_keyboard_stop_scan(p_simone->p_fsm_keyboard);
+    port_keyboard_stop_scan(p_simone->p_fsm_keyboard->keyboard_id);
 
     if(p_simone->playback_over)
     {
@@ -468,7 +467,7 @@ static void do_start_player_sequence (fsm_t *p_this)
     /*start keyboard scanning*/
     fsm_keyboard_start_scan(p_simone->p_fsm_keyboard);
     
-    printf("[SIMONE][%ld] It is your tourn, you have ", SIMONE_TIME_WAIT_INPUT_MS/1000," seconds. \n");
+    printf("[SIMONE] It is your tourn, you have [%d] seconds. \n", SIMONE_TIME_WAIT_INPUT_MS/1000);
 
 }
 
@@ -492,7 +491,7 @@ static void do_winner (fsm_t *p_this)
 {
     /*stop the timer*/
     port_simone_stop_timer();
-    printf("[SIMONE][%ld] Congratulations, you have been able to remember ", SEQUENCE_LENGTH," colors\n");
+    printf("[SIMONE] Congratulations, you have been able to remember [%d] colors\n", SEQUENCE_LENGTH);
 }
 
 /**
@@ -506,7 +505,7 @@ static void do_game_over_timeout ( fsm_t *p_this)
     /*stop the timer*/
     port_simone_stop_timer();
     
-    printf("[SIMONE][%ld] Game Over, you have been able to remember ", p_simone->seq_idx -1," colors\n");
+    printf("[SIMONE] Game Over, you have been able to remember [%d] colors\n", p_simone->seq_idx -1);
     /*reset the index and elements of the fsm structure*/
     p_simone->seq_idx = 0;
     p_simone->player_idx = 0;
@@ -549,7 +548,7 @@ void do_add_color (fsm_t *p_this)
         }
         /*reset seq_idx*/
         p_simone->seq_idx = 0;
-        printf("[SIMONE][%ld] The difficulty has increased to ", p_simone->level,"\n");
+        printf("[SIMONE] The difficulty has increased to [%d] \n", p_simone->level);
     }
     _add_color(p_simone);
     
@@ -605,7 +604,7 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     /*set the light off*/
     fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,MAX_LEVEL_INTENSITY);
-    printf("[SIMONE][%ld] Game Over, you have pressed ", p_simone->player_key," and you should have pressed " ,_get_key_from_color(p_simone->seq_colors[p_simone->player_idx]), "\n");
+    printf("[SIMONE] Game Over, you have pressed [%c] and you should have pressed [%c] \n", p_simone->player_key,_get_key_from_color(p_simone->seq_colors[p_simone->player_idx]));
     /*reset params*/
     p_simone->seq_idx=0;
     p_simone->player_idx=0;
@@ -615,15 +614,59 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 }
 
+fsm_trans_t fsm_trans_simone[] = {
+    {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
+    {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
+    {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
+    {PLAYBACK,              check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_playback},
+    {PLAYBACK,              check_playback_over,            WAIT_KEY,               do_start_player_sequence},
+    {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
+    {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
+    {WAIT_KEY,              check_off,                      IDLE,                   do_stop_simone},
+    {WAIT_KEY,              check_winner,                   IDLE,                   do_winner},
+    {WAIT_KEY,              check_player_key_timeout,       IDLE,                   do_game_over_timeout},
+    {WAIT_KEY,              check_player_round_end,         ADD_COLOR,              do_add_color},
+    {WAIT_KEY,              check_any_key_pressed,          VERIFY_INPUT,           do_capture_input},
+    {VERIFY_INPUT,          check_input_valid,              WAIT_KEY,               do_valid_key},
+    {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
+    {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
+    {-1,                    NULL,                           -1,                     NULL}
+};
+
 static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
 {
-    /* TODO students */
-
+    /*start fsm struc*/
+    fsm_init(&p_fsm_simone->f,fsm_trans_simone);
+    port_simone_init();
+    /*initialize the structure of simone*/
+    *p_fsm_simone->p_fsm_button = *p_fsm_button;
+    *p_fsm_simone->p_fsm_keyboard = *p_fsm_keyboard;
+    *p_fsm_simone->p_fsm_rgb_light = *p_fsm_rgb_light;
+    p_fsm_simone->on_off_press_time_ms = on_off_press_time_ms;
+    p_fsm_simone->level = level;
     /*set the seed*/
-    srand(port_system_get_millis());
+    srand(time(NULL));
+
+    printf("[SIMONE] Press a button to start a new game\n");
+
 }
 
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
 {
-    /* TODO students */
+    fsm_simone_t *p_fsm_simone = malloc(sizeof(fsm_simone_t)); /* Do malloc to reserve memory of all other FSM elements, although it is interpreted as fsm_t (the first element of the structure) */
+    fsm_simone_init(p_fsm_simone,p_fsm_button, on_off_press_time_ms, p_fsm_keyboard, p_fsm_rgb_light, level);                  /* Initialize the FSM */
+    return p_fsm_simone;
+
+}
+
+void fsm_simone_fire(fsm_simone_t *p_fsm)
+{
+    fsm_fire(&p_fsm->f);
+}
+
+void fsm_simone_destroy(fsm_simone_t *p_fsm)
+{
+    fsm_destroy(&p_fsm->f);
 }

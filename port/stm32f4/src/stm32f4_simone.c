@@ -93,5 +93,7 @@ void port_simone_init(void)
 {
     /* TODO students: */
     // 1. Reset the flag of the timer timeout
+    port_simone_set_timeout_status(false);
     // 2. Configure the timer that controls the duration of the different aspects of the game
+    _timer_simone_setup();
 }

@@ -68,7 +68,7 @@ void EXTI15_10_IRQHandler(void)
         bool condition = stm32f4_system_gpio_read(p_port,pin);
 
         //if the is released changes the flag
-        buttons_arr[PORT_USER_BUTTON_ID].flag_pressed = ~condition;
+        buttons_arr[PORT_USER_BUTTON_ID].flag_pressed = !condition;
 
         // cleans the pendig register
         EXTI->PR = BIT_POS_TO_MASK(pin);
@@ -97,9 +97,9 @@ void EXTI9_5_IRQHandler(){
         _check_column_interrupt(PORT_KEYBOARD_COL_3);
     }
     //limpiamos las otras interrupciones
-    if (EXTI->PR & (0x03e0)) {
+    /*if (EXTI->PR & (0x03e0)) {
         EXTI->PR = 0x03e0;
-    }
+    }*/
 }
 
 /**
@@ -110,11 +110,8 @@ void EXTI4_IRQHandler()
 {
     /*reactivated SysTcick*/
     port_system_systick_resume();
+    _check_column_interrupt(PORT_KEYBOARD_COL_2);
     
-    if(EXTI->PR & BIT_POS_TO_MASK(keyboards_arr[PORT_KEYBOARD_MAIN_ID].p_col_pins[PORT_KEYBOARD_COL_2]))
-    {
-        _check_column_interrupt(PORT_KEYBOARD_COL_2);
-    }
 }
 
 /**
