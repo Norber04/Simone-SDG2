@@ -172,8 +172,84 @@ static bool check_color_added(fsm_t *p_this)
  */
 static bool check_playback_over (fsm_t *p_this)
 {
-     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     return (p_simone->playback_idx<0 && port_simone_get_timeout_status());
+}
+
+/**
+ * @brief Check of the player has won the game
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player has won the game
+ * @return false 
+ */
+static bool check_winner (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    bool win = false;
+    /*check if the player has finished the sequence*/
+    if (p_simone->player_idx >= p_simone->seq_idx)
+    {
+        /*check of the sequence has rrived to the max lenght*/
+        if (p_simone->seq_idx >= SEQUENCE_LENGTH)
+        {
+            /*check if the difficulty is the max*/
+            if (p_simone->level == LEVEL_HARD)
+            {
+                win = true;
+            }
+        }
+    }
+    return win;
+}
+
+/**
+ * @brief 	Check if the player key timeout has occurred. This is, the player has taken too long to press a key. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player timeout has expired
+ * @return false 
+ */
+static bool check_player_key_timeout (fsm_t *p_this)
+{
+    /*check of the player timeout has expired*/
+    return port_simone_get_timeout_status();
+}
+
+/**
+ * @brief 	Check if the player has finished the current sequence. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player has finished the round
+ * @return false 
+ */
+static bool check_player_round_end (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+
+    /*check if the player has inputed all the sequence*/
+    if (p_simone->player_idx >= p_simone->seq_idx)
+    {
+        /*sheck if the player has played the max lenght or the max difficulty*/
+        if (p_simone->seq_idx < SEQUENCE_LENGTH || p_simone->level != LEVEL_HARD)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 	Check if any key has been pressed by the player. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true the player has pressed a key
+ * @return false 
+ */
+static bool check_any_key_pressed (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    return p_simone->p_fsm_keyboard->key_value != p_simone->p_fsm_keyboard->invalid_key;
 }
 
 
@@ -350,6 +426,100 @@ static void do_sleep_playback (fsm_t *p_this)
 {
     /*call the sleep function*/
     port_system_sleep();
+}
+
+/**
+ * @brief Handle the winning status of the program
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+static void do_winner (fsm_t *p_this)
+{
+    /*stop the timer*/
+    port_simone_stop_timer();
+    printf("[SIMONE][%ld] Congratulations, you have been able to remember ", SEQUENCE_LENGTH," colors\n");
+}
+
+/**
+ * @brief Handle the game over status of the game. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+static void do_game_over_timeout ( fsm_t *p_this) 
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*stop the timer*/
+    port_simone_stop_timer();
+    
+    printf("[SIMONE][%ld] Game Over, you have been able to remember ", p_simone->seq_idx -1," colors\n");
+    /*reset the index and elements of the fsm structure*/
+    p_simone->seq_idx = 0;
+    p_simone->player_idx = 0;
+    p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
+    p_simone->level = LEVEL_EASY;
+
+    /*stop the scan*/
+    fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
+
+    port_system_sleep();
+}
+
+/**
+ * @brief 	Add a new color to the current sequence. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+void do_add_color (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*reset the player index, playback index and playback over flag*/
+    p_simone->playback_idx = 0;
+    p_simone->player_idx = 0;
+    p_simone->playback_over = false;
+    /*TODO revisar*/
+    /*check if the array is full and the difficulty is less tha difficult*/
+    if (p_simone->seq_idx >= SEQUENCE_LENGTH && (p_simone->level == LEVEL_EASY) && (p_simone->level == LEVEL_MEDIUM))
+    {
+        /*increase level*/
+        switch (p_simone->level)
+        {
+        case LEVEL_EASY:
+            p_simone->level = LEVEL_MEDIUM;
+            break;
+        case LEVEL_MEDIUM:
+            p_simone->level = LEVEL_HARD;
+            break;
+        default:
+            break;
+        }
+        /*reset seq_idx*/
+        p_simone->seq_idx = 0;
+        printf("[SIMONE][%ld] The difficulty has increased to ", p_simone->level,"\n");
+    }
+    _add_color(p_simone);
+    
+}
+
+/**
+ * @brief 	Capture the player's key input and provide visual feedback. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
+static void do_capture_input (fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*save the key pressed in the player key*/
+    p_simone->player_key = p_simone->p_fsm_keyboard->key_value;
+    /*reset the value of key presed*/
+    p_simone->p_fsm_keyboard->key_value = p_simone->p_fsm_keyboard->invalid_key;
+
+    /*get the color from the key*/
+    rgb_color_t color = _get_color_from_key(p_simone->player_key);
+    /*set the color in the led*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color,MAX_LEVEL_INTENSITY);
+
+    /*set the timeout for visual feedback*/
+    port_simone_set_timer_timeout(SIMONE_TIME_VISUAL_FEEDBACK_MS);
 }
 
 static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
