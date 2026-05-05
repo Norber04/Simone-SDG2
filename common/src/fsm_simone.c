@@ -175,6 +175,16 @@ static bool check_playback_over (fsm_t *p_this)
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     return (p_simone->playback_idx<0 && port_simone_get_timeout_status());
 }
+/**
+ * @brief Check wheter the temporizor is expired. If so, it means it time to change the LED state.
+ * 
+ * @return true 
+ * @return false 
+ */
+static bool check_playback_color_timeout()
+{
+    return port_simone_get_timeout_status();
+}
 
 /**
  * @brief Check of the player has won the game
