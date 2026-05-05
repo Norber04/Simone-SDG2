@@ -175,6 +175,16 @@ static bool check_playback_over (fsm_t *p_this)
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     return (p_simone->playback_idx<0 && port_simone_get_timeout_status());
 }
+/**
+ * @brief 	Check if the playback color timeout has occurred. 
+ * 
+ * @return true the timeout has occured
+ * @return false 
+ */
+static bool check_playback_color_timeout()
+{
+    return port_simone_get_timeout_status();
+}
 
 /**
  * @brief Check of the player has won the game
