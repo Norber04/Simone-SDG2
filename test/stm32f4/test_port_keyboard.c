@@ -1063,7 +1063,7 @@ int main(void)
     RUN_TEST(test_wiring_rows_cols);
     RUN_TEST(test_regs_config_mode_pupd);
     RUN_TEST(test_regs_config_unchanged);
-    RUN_TEST(test_exti);
+    RUN_TEST(test_exti);    //TODO esta se bloquea a veces
     RUN_TEST(test_exti_enabled_priority);
 
     // Test measurement timer configuration
@@ -1074,7 +1074,7 @@ int main(void)
 
     // Run simulation tests
     RUN_TEST(test_port_keyboard_excite_row_exclusion);
-    RUN_TEST(test_col_scan_timer_timeout_start_simulation);
+    RUN_TEST(test_col_scan_timer_timeout_start_simulation); // TODO esta se bloquea
     RUN_TEST(test_all_keys_press_simulation);
 
     // Run generalization test the last to avoid interference with other tests

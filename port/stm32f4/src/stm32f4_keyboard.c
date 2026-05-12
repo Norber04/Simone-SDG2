@@ -179,12 +179,11 @@ void port_keyboard_excite_row (uint8_t keyboard_id, uint8_t row_idx)
     stm32f4_keyboard_hw_t *p_keyboard = _stm32f4_keyboard_get(keyboard_id);
     for(uint8_t i = 0; i<p_keyboard->p_keyboard->num_rows; i++)
     {
-        if(i == row_idx)
-        {
-            stm32f4_system_gpio_write(p_keyboard->p_row_ports[i],p_keyboard->p_row_pins[i],true);
-        }
-        else stm32f4_system_gpio_write(p_keyboard->p_row_ports[i],p_keyboard->p_row_pins[i],false);
+        stm32f4_system_gpio_write(p_keyboard->p_row_ports[i],p_keyboard->p_row_pins[i],false);
     }
+    
+    stm32f4_system_gpio_write(p_keyboard->p_row_ports[row_idx],p_keyboard->p_row_pins[row_idx],true);
+        
 }	
 
 void port_keyboard_excite_next_row 	(uint8_t keyboard_id) 
@@ -232,7 +231,7 @@ char port_keyboard_get_invalid_key_value (uint8_t keyboard_id)
 
 void port_keyboard_start_scan(uint8_t keyboard_id)
 {
-    port_keyboard_set_row_timeout_status(keyboard_id,true);
+    port_keyboard_set_row_timeout_status(keyboard_id,false);
     //reset the CNT
     TIM5 -> CNT = 0;
     //excite the first row

@@ -173,7 +173,7 @@ static bool check_color_added(fsm_t *p_this)
 static bool check_playback_over (fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    return (p_simone->playback_idx>p_simone->seq_idx&& port_simone_get_timeout_status());
+    return (p_simone->playback_idx==100 && port_simone_get_timeout_status());
 }
 /**
  * @brief 	Check if the playback color timeout has occurred. 
@@ -389,7 +389,7 @@ static void do_sleep_idle(fsm_t *p_this)
 static void do_playback (fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    if (p_simone->playback_idx < p_simone->seq_idx)
+    if (p_simone->playback_idx >= p_simone->seq_idx)
     {
         return;
     }
@@ -400,7 +400,7 @@ static void do_playback (fsm_t *p_this)
     if(p_simone->playback_over)
     {
         /*Set the light to off*/
-        port_rgb_light_set_rgb(p_simone->p_fsm_rgb_light->rgb_light_id,color_off);
+        fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,0);
         /*Set timer duration for timer between colors*/
         port_simone_set_timer_timeout(SIMONE_TIME_OFF_BETWEEN_COLORS_MS);
         /*increase playback idx*/
@@ -410,7 +410,7 @@ static void do_playback (fsm_t *p_this)
 
         if(p_simone->playback_idx >= p_simone->seq_idx)
         {
-            p_simone->playback_idx = -1;
+            p_simone->playback_idx = 100;
         }
         return;
     }
@@ -621,8 +621,6 @@ fsm_trans_t fsm_trans_simone[] = {
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
     {PLAYBACK,              check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_playback},
     {PLAYBACK,              check_playback_over,            WAIT_KEY,               do_start_player_sequence},
-    {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
-    {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {WAIT_KEY,              check_off,                      IDLE,                   do_stop_simone},
     {WAIT_KEY,              check_winner,                   IDLE,                   do_winner},
     {WAIT_KEY,              check_player_key_timeout,       IDLE,                   do_game_over_timeout},
@@ -632,6 +630,8 @@ fsm_trans_t fsm_trans_simone[] = {
     {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
     {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
+    {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
+    {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {-1,                    NULL,                           -1,                     NULL}
 };
 
@@ -641,9 +641,9 @@ static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_butt
     fsm_init(&p_fsm_simone->f,fsm_trans_simone);
     port_simone_init();
     /*initialize the structure of simone*/
-    *p_fsm_simone->p_fsm_button = *p_fsm_button;
-    *p_fsm_simone->p_fsm_keyboard = *p_fsm_keyboard;
-    *p_fsm_simone->p_fsm_rgb_light = *p_fsm_rgb_light;
+    p_fsm_simone->p_fsm_button = p_fsm_button;
+    p_fsm_simone->p_fsm_keyboard = p_fsm_keyboard;
+    p_fsm_simone->p_fsm_rgb_light = p_fsm_rgb_light;
     p_fsm_simone->on_off_press_time_ms = on_off_press_time_ms;
     p_fsm_simone->level = level;
     /*set the seed*/
