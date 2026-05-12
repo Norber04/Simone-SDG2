@@ -376,10 +376,10 @@ static void do_stop_simone (fsm_t *p_this)
  * 
  * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
  */
-static void do_sleep_idle(fsm_t *p_this)
+/*static void do_sleep_idle(fsm_t *p_this)
 {
     port_system_sleep();
-}
+}*/
 
 /**
  * @brief 	Handle the playback of the current sequence to the player.
@@ -478,8 +478,8 @@ static void do_start_player_sequence (fsm_t *p_this)
  */
 static void do_sleep_playback (fsm_t *p_this)
 {
-    /*call the sleep function*/
-    port_system_sleep();
+    //call the sleep function
+    //port_system_sleep();
 }
 
 /**
@@ -616,7 +616,7 @@ static void do_game_over_invalid_key(fsm_t *p_this)
 
 fsm_trans_t fsm_trans_simone[] = {
     {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
-    {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    //{IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
     {PLAYBACK,              check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_playback},
@@ -628,10 +628,10 @@ fsm_trans_t fsm_trans_simone[] = {
     {WAIT_KEY,              check_any_key_pressed,          VERIFY_INPUT,           do_capture_input},
     {VERIFY_INPUT,          check_input_valid,              WAIT_KEY,               do_valid_key},
     {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
-    {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
-    {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
+    //{SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    //{SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
     {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
-    {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
+    //{SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {-1,                    NULL,                           -1,                     NULL}
 };
 
