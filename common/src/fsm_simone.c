@@ -243,6 +243,7 @@ static bool check_player_round_end (fsm_t *p_this)
         /*sheck if the player has played the max lenght or the max difficulty*/
         if (p_simone->seq_idx < SEQUENCE_LENGTH || p_simone->level != LEVEL_HARD)
         {
+            
             return true;
         }
     }
@@ -619,8 +620,8 @@ fsm_trans_t fsm_trans_simone[] = {
     {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
-    {PLAYBACK,              check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {PLAYBACK,              check_playback_over,            WAIT_KEY,               do_start_player_sequence},
+    {PLAYBACK,              check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {WAIT_KEY,              check_off,                      IDLE,                   do_stop_simone},
     {WAIT_KEY,              check_winner,                   IDLE,                   do_winner},
     {WAIT_KEY,              check_player_key_timeout,       IDLE,                   do_game_over_timeout},

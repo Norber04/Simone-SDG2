@@ -166,6 +166,7 @@ void port_keyboard_init(uint8_t keyboard_id)
             1,
             1);
     }
+
     
     /* Clean/set all configurations */
     p_keyboard->col_idx_interrupt = -1; 
@@ -236,6 +237,7 @@ void port_keyboard_start_scan(uint8_t keyboard_id)
     TIM5 -> CNT = 0;
     //excite the first row
     port_keyboard_excite_row(keyboard_id,0);
+    keyboards_arr[keyboard_id].current_excited_row = 0;
     //enable the interupt
     NVIC_EnableIRQ(TIM5_IRQn);
     //Enable the counter

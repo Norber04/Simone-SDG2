@@ -33,12 +33,12 @@ static void _timer_simone_setup()
     TIM3 -> CR1 |= TIM_CR1_ARPE;
 
     /*Clear the update interrupt flag*/
-    TIM3 -> SR = ~TIM_SR_UIF;
+    TIM3 -> SR &= ~TIM_SR_UIF;
     /*Enable the interrupts of the timer*/
     TIM3 -> DIER |= TIM_DIER_UIE;
     /*Set the priority of the timer interrupt */
     NVIC_SetPriority ( TIM3_IRQn,NVIC_EncodePriority(NVIC_GetPriorityGrouping (),3,0));
-    //TODO REVISAR SI ESTO ESTA BIEN
+    NVIC_EnableIRQ(TIM3_IRQn);
 }
 
 void port_simone_set_timer_timeout(uint32_t duration_ms)
