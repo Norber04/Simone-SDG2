@@ -230,8 +230,8 @@ static bool check_player_key_timeout (fsm_t *p_this)
  * @brief 	Check if the player has finished the current sequence. 
  * 
  * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
- * @return true the player has finished the round
- * @return false 
+ * @return true 
+ * @return false the player has finished the round
  */
 static bool check_player_round_end (fsm_t *p_this)
 {
@@ -243,10 +243,10 @@ static bool check_player_round_end (fsm_t *p_this)
         /*sheck if the player has played the max lenght or the max difficulty*/
         if (p_simone->seq_idx < SEQUENCE_LENGTH || p_simone->level != LEVEL_HARD)
         {
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 /**
@@ -376,10 +376,10 @@ static void do_stop_simone (fsm_t *p_this)
  * 
  * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
  */
-/*static void do_sleep_idle(fsm_t *p_this)
+static void do_sleep_idle(fsm_t *p_this)
 {
     port_system_sleep();
-}*/
+}
 
 /**
  * @brief 	Handle the playback of the current sequence to the player.
@@ -395,7 +395,7 @@ static void do_playback (fsm_t *p_this)
     }
     /*reset the flag timer and stop the scan of the keyboard*/
     port_simone_set_timeout_status(false);
-    port_keyboard_stop_scan(p_simone->p_fsm_keyboard->keyboard_id);
+    fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 
     if(p_simone->playback_over)
     {
@@ -479,7 +479,7 @@ static void do_start_player_sequence (fsm_t *p_this)
 static void do_sleep_playback (fsm_t *p_this)
 {
     //call the sleep function
-    //port_system_sleep();
+    port_system_sleep();
 }
 
 /**
@@ -532,7 +532,7 @@ void do_add_color (fsm_t *p_this)
     p_simone->playback_over = false;
     /*TODO revisar*/
     /*check if the array is full and the difficulty is less tha difficult*/
-    if (p_simone->seq_idx >= SEQUENCE_LENGTH && (p_simone->level == LEVEL_EASY) && (p_simone->level == LEVEL_MEDIUM))
+    if (p_simone->seq_idx >= SEQUENCE_LENGTH && p_simone->level != LEVEL_HARD)
     {
         /*increase level*/
         switch (p_simone->level)
@@ -616,10 +616,10 @@ static void do_game_over_invalid_key(fsm_t *p_this)
 
 fsm_trans_t fsm_trans_simone[] = {
     {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
-    //{IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
-    {PLAYBACK,              check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_playback},
+    {PLAYBACK,              check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {PLAYBACK,              check_playback_over,            WAIT_KEY,               do_start_player_sequence},
     {WAIT_KEY,              check_off,                      IDLE,                   do_stop_simone},
     {WAIT_KEY,              check_winner,                   IDLE,                   do_winner},
@@ -628,10 +628,10 @@ fsm_trans_t fsm_trans_simone[] = {
     {WAIT_KEY,              check_any_key_pressed,          VERIFY_INPUT,           do_capture_input},
     {VERIFY_INPUT,          check_input_valid,              WAIT_KEY,               do_valid_key},
     {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
-    //{SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
-    //{SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
+    {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
     {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
-    //{SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
+    {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
     {-1,                    NULL,                           -1,                     NULL}
 };
 
