@@ -243,7 +243,7 @@ static bool check_player_round_end (fsm_t *p_this)
         /*sheck if the player has played the max lenght or the max difficulty*/
         if (p_simone->seq_idx < SEQUENCE_LENGTH || p_simone->level != LEVEL_HARD)
         {
-            
+
             return true;
         }
     }
@@ -277,7 +277,7 @@ static bool check_input_valid (fsm_t *p_this)
     if (port_simone_get_timeout_status())
     {
         /*return true if the player key is equal to the light*/
-        if (p_simone->player_key == _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
+        if (p_simone->player_key == _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]) && p_simone->player_key!= KEY_WILDCARD)
         {
             return true;
         }
@@ -300,13 +300,40 @@ static bool check_input_invalid (fsm_t *p_this)
     if (port_simone_get_timeout_status())
     {
         /*return false if the player key is equal to the light*/
-        if (p_simone->player_key != _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
+        if (p_simone->player_key != _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]) && p_simone->player_key!= KEY_WILDCARD)
         {
             return true;
         }
     }
     return false;
 
+}
+
+static bool check_wildcard(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*check if the input feedback has finished */
+    if (port_simone_get_timeout_status())
+    {
+        /*return true if the player key is equal to '*' */
+        if (p_simone->player_key == KEY_WILDCARD)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool check_stop(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    return (p_simone->p_fsm_button->duration >= p_simone->on_off_press_time_ms/4) && (p_simone->p_fsm_button->duration < p_simone->on_off_press_time_ms);
+}
+
+static bool check_resume(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    return (p_simone->p_fsm_button->duration >= p_simone->on_off_press_time_ms/4) && (p_simone->p_fsm_button->duration < p_simone->on_off_press_time_ms);
 }
 
 /* State machine output or action functions */
@@ -615,10 +642,105 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 }
 
+static void do_wildcard(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    //reset playback index
+    p_simone->playback_idx = 0;
+    
+    /*get color and intensity from arrays*/
+    rgb_color_t color = p_simone->seq_colors[p_simone->playback_idx];
+    uint8_t intensity = p_simone->seq_intensities[p_simone->playback_idx];
+    /*set color and intensity*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color,intensity);
+    /*select on duration depending on difilculty*/
+    uint32_t tim;
+    switch (p_simone->level)
+    {
+    case LEVEL_EASY:
+        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
+        break;
+    case LEVEL_MEDIUM:
+        tim = SIMONE_TIME_ON_LEVEL_MEDIUM_MS;
+        break;
+    case LEVEL_HARD:
+        tim = SIMONE_TIME_ON_LEVEL_HARD_MS;
+        break;
+    default:
+        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
+        break;
+    }
+    port_simone_set_timer_timeout(tim);
+
+    /*set playback over*/
+    p_simone->playback_over = true;
+
+    printf("[SIMONE] The sequence will be repeated \n");
+}
+
+static void do_stop_playback(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*reset duration*/
+    p_simone->p_fsm_button->duration =0;
+    /*stop timer*/
+    port_simone_stop_timer();
+    /*shutdown_led*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,0);
+    printf("[SIMONE] The game has stopped, press shortly the button to resume \n");
+}
+
+static void do_resume_playback(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    //check if the round has ended or is the first value
+    if(p_simone->playback_idx != 0 && p_simone->playback_idx != 100)
+    {
+        //subtrack 1 so it shows the last color 
+        p_simone->playback_idx--;
+    }
+    if(p_simone->playback_idx == 100)
+    {
+        //if it was the last color in the sequence, set the playback idz to the last color in seq
+        p_simone->playback_idx = p_simone->seq_idx -1;
+    }
+    /*reset duration*/
+    p_simone->p_fsm_button->duration =0;
+
+    /*get color and intensity from arrays*/
+    rgb_color_t color = p_simone->seq_colors[p_simone->playback_idx];
+    uint8_t intensity = p_simone->seq_intensities[p_simone->playback_idx];
+    /*set color and intensity*/
+    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color,intensity);
+    /*select on duration depending on difilculty*/
+    uint32_t tim;
+    switch (p_simone->level)
+    {
+    case LEVEL_EASY:
+        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
+        break;
+    case LEVEL_MEDIUM:
+        tim = SIMONE_TIME_ON_LEVEL_MEDIUM_MS;
+        break;
+    case LEVEL_HARD:
+        tim = SIMONE_TIME_ON_LEVEL_HARD_MS;
+        break;
+    default:
+        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
+        break;
+    }
+    port_simone_set_timer_timeout(tim);
+
+    p_simone->playback_over = true;
+    printf("[SIMONE] The game has ressumed where you left it \n");
+}
+
+
 fsm_trans_t fsm_trans_simone[] = {
     {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
     {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
+    {PLAYBACK,              check_stop,                     STOP_WHILE_PLAYBACK,    do_stop_playback},  
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
     {PLAYBACK,              check_playback_over,            WAIT_KEY,               do_start_player_sequence},
     {PLAYBACK,              check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
@@ -629,10 +751,13 @@ fsm_trans_t fsm_trans_simone[] = {
     {WAIT_KEY,              check_any_key_pressed,          VERIFY_INPUT,           do_capture_input},
     {VERIFY_INPUT,          check_input_valid,              WAIT_KEY,               do_valid_key},
     {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
+    {VERIFY_INPUT,          check_wildcard,                 PLAYBACK,               do_wildcard},
     {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
     {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
     {SLEEP_WHILE_PLAYBACK,  check_no_activity,              SLEEP_WHILE_PLAYBACK,   do_sleep_playback},
+    {STOP_WHILE_PLAYBACK,   check_resume,                   PLAYBACK,               do_resume_playback},
+    {STOP_WHILE_PLAYBACK,   check_off,                      IDLE,                   do_stop_simone},
     {-1,                    NULL,                           -1,                     NULL}
 };
 

@@ -15,6 +15,7 @@
 #define KEY_YELLOW '5'
 #define KEY_TURQUOISE '8'
 #define KEY_WHITE '0'
+#define KEY_WILDCARD '*'
 #define KEY_INVALID_COLOR ' '
 
 // Intensities
@@ -35,6 +36,7 @@
 #define SIMONE_TIME_ON_LEVEL_HARD_MS 1000
 #define SIMONE_TIME_WAIT_INPUT_MS 5000
 
+
 enum FSM_SIMONE {
     IDLE = 0,
     ADD_COLOR,
@@ -43,6 +45,7 @@ enum FSM_SIMONE {
     VERIFY_INPUT,
     SLEEP_WHILE_IDLE,
     SLEEP_WHILE_PLAYBACK,
+    STOP_WHILE_PLAYBACK,
 };
 
 enum LEVELS {
