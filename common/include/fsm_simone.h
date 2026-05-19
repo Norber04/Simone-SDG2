@@ -68,6 +68,7 @@ typedef struct {
     char 	            player_key;                         /*!< Key pressed by the player */
     bool 	            playback_over;                      /*!< Indicate if the playback is over */
     uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
+    bool                wildcard_used;
 } fsm_simone_t;
 
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level);
