@@ -715,7 +715,7 @@ static void do_wildcard_used(fsm_t *p_this)
     port_simone_set_timer_timeout(SIMONE_TIME_WAIT_INPUT_MS);
     /*start keyboard scanning*/
     fsm_keyboard_start_scan(p_simone->p_fsm_keyboard);
-    printf("[SIMONE] You hava used the wildcard this level, play the sequence \n");
+    printf("[SIMONE] You have used the wildcard this level, play the sequence \n");
 }
 
 static void do_stop_playback(fsm_t *p_this)
