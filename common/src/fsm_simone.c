@@ -309,6 +309,26 @@ static bool check_input_invalid (fsm_t *p_this)
 
 }
 
+/**
+ * @brief 
+ * 
+ * @param p_this 
+ * @return true if the key pressed is one of the level select keys
+ * @return false 
+ */
+static bool check_level_key_pressed(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    return (p_simone->p_fsm_keyboard->key_value == KEY_LEVEL_EASY || p_simone->p_fsm_keyboard->key_value == KEY_LEVEL_MEDIUM || p_simone->p_fsm_keyboard->key_value == KEY_LEVEL_HARD);
+}
+
+
+static bool check_level_key_pressed_invalid(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    return !check_level_key_pressed(p_this) && (p_simone->p_fsm_keyboard->key_value != p_simone->p_fsm_keyboard->invalid_key);
+}
+
 static bool check_wildcard_unused(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -365,17 +385,16 @@ static void do_init_game(fsm_t *p_this)
     p_simone->p_fsm_button->duration = 0;
     /*reset the keyboard key*/
     p_simone->p_fsm_keyboard->key_value = p_simone->p_fsm_keyboard->invalid_key;
+    p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
+    port_simone_set_timeout_status(false);
     /*reset the index*/
     p_simone->seq_idx = 0;
     p_simone->playback_idx = 0;
     p_simone->player_idx = 0;
     /*reset the playback over*/
     p_simone->playback_over = false;
-    /*reset the player key*/
+        /*reset the player key*/
     p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
-
-    /*initialize the level difficulty*/
-    p_simone->level = LEVEL_EASY;
 
     /*initialize the color sequence*/
     for (uint8_t i = 0; i < SEQUENCE_LENGTH; i++)
@@ -387,9 +406,6 @@ static void do_init_game(fsm_t *p_this)
     {
         p_simone->seq_intensities[i] = 0;
     }
-    
-    /*add a color tto the sequence*/
-    _add_color(p_simone);
 
     /*set the light to active*/
     p_simone->p_fsm_rgb_light->status = true;
@@ -397,7 +413,9 @@ static void do_init_game(fsm_t *p_this)
     /*set the wildcard flag*/
     p_simone->wildcard_used = false;
 
-    printf("[SIMONE][%ld] Simone game INIT\n", port_system_get_millis());
+    fsm_keyboard_start_scan(p_simone->p_fsm_keyboard);
+
+    printf("[SIMONE][%ld] Simone game INIT, press 'A' for easy, 'B' for medium or 'C' for hard \n", port_system_get_millis());
 }
 
 /**
@@ -509,6 +527,7 @@ static void do_start_player_sequence (fsm_t *p_this)
     /*set off the led*/
     fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,0);
     /*set timeout*/
+    port_simone_set_timeout_status(false);
     port_simone_set_timer_timeout(SIMONE_TIME_WAIT_INPUT_MS);
     /*start keyboard scanning*/
     fsm_keyboard_start_scan(p_simone->p_fsm_keyboard);
@@ -537,6 +556,7 @@ static void do_winner (fsm_t *p_this)
 {
     /*stop the timer*/
     port_simone_stop_timer();
+    port_simone_set_timeout_status(false);
     printf("[SIMONE] Congratulations, you have been able to remember [%d] colors\n", SEQUENCE_LENGTH);
 }
 
@@ -550,6 +570,7 @@ static void do_game_over_timeout ( fsm_t *p_this)
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     /*stop the timer*/
     port_simone_stop_timer();
+    port_simone_set_timeout_status(false);
     
     printf("[SIMONE] Game Over, you have been able to remember [%d] colors\n", p_simone->seq_idx -1);
     /*reset the index and elements of the fsm structure*/
@@ -578,6 +599,7 @@ void do_add_color (fsm_t *p_this)
     p_simone->playback_idx = 0;
     p_simone->player_idx = 0;
     p_simone->playback_over = false;
+    char *char_level;
     /*check if the array is full and the difficulty is less tha difficult*/
     if (p_simone->seq_idx >= SEQUENCE_LENGTH && p_simone->level != LEVEL_HARD)
     {
@@ -586,9 +608,11 @@ void do_add_color (fsm_t *p_this)
         {
         case LEVEL_EASY:
             p_simone->level = LEVEL_MEDIUM;
+            char_level = "easy";
             break;
         case LEVEL_MEDIUM:
             p_simone->level = LEVEL_HARD;
+            char_level = "medium";
             break;
         default:
             break;
@@ -597,7 +621,7 @@ void do_add_color (fsm_t *p_this)
         p_simone->seq_idx = 0;
         /*reset wildcard flag*/
         p_simone->wildcard_used = false;
-        printf("[SIMONE] The difficulty has increased to [%d], you have 1 wildcard \n", p_simone->level);
+        printf("[SIMONE] The difficulty has increased to [%s], you have 1 wildcard \n", char_level);
     }
     _add_color(p_simone);
     
@@ -660,7 +684,56 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
     /*stop timer and keyboard scan*/
     port_simone_stop_timer();
+    port_simone_set_timeout_status(false);
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
+}
+
+static void do_select_level(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*save the key pressed in the player key*/
+    p_simone->player_key = p_simone->p_fsm_keyboard->key_value;
+    /*reset the value of key presed*/
+    p_simone->p_fsm_keyboard->key_value = p_simone->p_fsm_keyboard->invalid_key;
+
+    char *char_level;
+    switch (p_simone->player_key)
+    {
+        case KEY_LEVEL_EASY:
+            p_simone->level = LEVEL_EASY;
+            char_level = "easy";
+            break;
+        case KEY_LEVEL_MEDIUM:
+            p_simone->level = LEVEL_MEDIUM;
+            char_level = "medium";
+            break;
+        case KEY_LEVEL_HARD:
+            p_simone->level = LEVEL_HARD;
+            char_level = "hard";
+            break;
+        default:
+            break;
+    }
+
+    /*reset the player key*/
+    p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
+
+    fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
+
+    /*add a color tto the sequence*/
+    _add_color(p_simone);
+
+    port_simone_set_timeout_status(false);
+
+    printf("[SIMONE] You have selected the [%s] difficulty, you have 1 wildcard per level \n", char_level);
+}
+
+static void do_select_level_invalid(fsm_t *p_this)
+{
+    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
+    /*reset the value of key presed*/
+    p_simone->p_fsm_keyboard->key_value = p_simone->p_fsm_keyboard->invalid_key;
+    printf("[SIMONE] That key does not correspond to a valid level \n");
 }
 
 static void do_wildcard(fsm_t *p_this)
@@ -777,8 +850,11 @@ static void do_resume_playback(fsm_t *p_this)
 
 
 fsm_trans_t fsm_trans_simone[] = {
-    {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
+    {IDLE,                  check_on,                       SELECT_LEVEL,           do_init_game},
     {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
+    {SELECT_LEVEL,          check_level_key_pressed,        ADD_COLOR,              do_select_level},
+    {SELECT_LEVEL,          check_off,                      IDLE,                   do_stop_simone},
+    {SELECT_LEVEL,          check_level_key_pressed_invalid,SELECT_LEVEL,           do_select_level_invalid},
     {ADD_COLOR,             check_color_added,              PLAYBACK,               do_playback},
     {PLAYBACK,              check_stop,                     STOP_WHILE_PLAYBACK,    do_stop_playback},  
     {PLAYBACK,              check_off,                      IDLE,                   do_stop_simone},
@@ -813,9 +889,15 @@ static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_butt
     p_fsm_simone->p_fsm_rgb_light = p_fsm_rgb_light;
     p_fsm_simone->on_off_press_time_ms = on_off_press_time_ms;
     p_fsm_simone->level = level;
-    p_fsm_simone->wildcard_used = false;
     /*set the seed*/
     srand(time(NULL));
+
+    p_fsm_simone->seq_idx = 0;
+    p_fsm_simone->player_idx = 0;
+    p_fsm_simone->playback_idx = 0;
+    p_fsm_simone->playback_over = false;
+    p_fsm_simone->wildcard_used = false;
+    p_fsm_simone->player_key = p_fsm_keyboard->invalid_key;
 
     printf("[SIMONE] Press a button to start a new game\n");
 

@@ -16,6 +16,11 @@
 #define KEY_TURQUOISE '8'
 #define KEY_WHITE '0'
 #define KEY_WILDCARD '*'
+
+#define KEY_LEVEL_EASY 'A'
+#define KEY_LEVEL_MEDIUM 'B'
+#define KEY_LEVEL_HARD 'C'
+
 #define KEY_INVALID_COLOR ' '
 
 // Intensities
@@ -39,6 +44,7 @@
 
 enum FSM_SIMONE {
     IDLE = 0,
+    SELECT_LEVEL,
     ADD_COLOR,
     PLAYBACK,
     WAIT_KEY,
@@ -68,7 +74,7 @@ typedef struct {
     char 	            player_key;                         /*!< Key pressed by the player */
     bool 	            playback_over;                      /*!< Indicate if the playback is over */
     uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
-    bool                wildcard_used;
+    bool                wildcard_used;                      /*!< Indicate if the wildcard has been used in the level*/
 } fsm_simone_t;
 
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level);
