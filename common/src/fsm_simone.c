@@ -718,6 +718,9 @@ static void do_select_level(fsm_t *p_this)
     /*reset the player key*/
     p_simone->player_key = p_simone->p_fsm_keyboard->invalid_key;
 
+    p_simone->playback_idx = 0;
+    p_simone->player_idx = 0;
+
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 
     /*add a color tto the sequence*/
