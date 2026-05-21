@@ -3,7 +3,7 @@
  * @brief Header for fsm_keyboard.c file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date fecha
+ * @date 22/05/2026
  */
 
 #ifndef FSM_KEYBOARD_H_
@@ -45,6 +45,11 @@ typedef struct
  */
 fsm_keyboard_t * 	fsm_keyboard_new (uint32_t debounce_time_ms, uint8_t keyboard_id);
 
+/**
+ * @brief This function destroys a keyboard FSM and frees the memory.
+ * 
+ * @param p_fsm Pointer to an fsm_keyboard_t struct. 
+ */
 void 	fsm_keyboard_destroy (fsm_keyboard_t *p_fsm);
 
 /**
@@ -101,6 +106,13 @@ void 	fsm_keyboard_reset_key_value (fsm_keyboard_t *p_fsm);
  */
 bool 	fsm_keyboard_check_activity (fsm_keyboard_t *p_fsm);
 
+/**
+ * @brief The keyboard is always inactive because it works with events.
+ * 
+ * @param p_fsm Pointer to an fsm_keyboard_t struct. 
+ * @return true 
+ * @return false allways
+ */
 bool fsm_keyboard_check_activity(fsm_keyboard_t * p_fsm);
 
 #endif /* FSM_KEYBOARD_H_ */

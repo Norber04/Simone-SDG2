@@ -1,9 +1,9 @@
 /**
  * @file fsm_simone.c
  * @brief Simone FSM main file.
- * @author alumno1
- * @author alumno2
- * @date fecha
+ * @author Norberto de los Rios Gutierrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -25,6 +25,12 @@
 
 const rgb_color_t *p_colors_library[] = {&color_red, &color_green, &color_blue, &color_yellow, &color_turquoise, &color_white};
 
+/**
+ * @brief This functions returns the expected key from the color argument
+ * 
+ * @param color color to translate to key value
+ * @return char key representing the color
+ */
 static char _get_key_from_color(rgb_color_t color)
 {
     if (color.r == color_red.r && color.g == color_red.g && color.b == color_red.b) {
@@ -44,6 +50,12 @@ static char _get_key_from_color(rgb_color_t color)
     }
 }
 
+/**
+ * @brief this function returns the color corresponding to a given key
+ * 
+ * @param key key value
+ * @return rgb_color_t color corresponding to the given key
+ */
 static rgb_color_t _get_color_from_key(char key)
 {
     switch (key) {
@@ -175,6 +187,7 @@ static bool check_playback_over (fsm_t *p_this)
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     return (p_simone->playback_idx==100 && port_simone_get_timeout_status());
 }
+
 /**
  * @brief 	Check if the playback color timeout has occurred. 
  * 
@@ -309,6 +322,13 @@ static bool check_input_invalid (fsm_t *p_this)
 
 }
 
+/**
+ * @brief This function checks if the wildcard has not been used this round
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true if the player key is equal to '*' and the wildcard has not been used this level
+ * @return false 
+ */
 static bool check_wildcard_unused(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -324,6 +344,13 @@ static bool check_wildcard_unused(fsm_t *p_this)
     return false;
 }
 
+/**
+ * @brief This function checks if the wildcard has been used this round
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true if the player key is equal to '*' and the wildcard has been used this level
+ * @return false 
+ */
 static bool check_wildcard_used(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -339,12 +366,26 @@ static bool check_wildcard_used(fsm_t *p_this)
     return false;
 }
 
+/**
+ * @brief This function checks if the user button has been pressed more than 0.25s and less than the on of time
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true if the user button has been pressed more than 0.25s and less than the on of time
+ * @return false 
+ */
 static bool check_stop(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
     return (p_simone->p_fsm_button->duration >= p_simone->on_off_press_time_ms/4) && (p_simone->p_fsm_button->duration < p_simone->on_off_press_time_ms);
 }
 
+/**
+ * @brief This function checks if the user button has been pressed more than 0.25s and less than the on of time
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ * @return true if the user button has been pressed more than 0.25s and less than the on of time
+ * @return false 
+ */
 static bool check_resume(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -663,6 +704,11 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 }
 
+/**
+ * @brief This function handles the repetition of the playback of the sequence 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
 static void do_wildcard(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -701,6 +747,11 @@ static void do_wildcard(fsm_t *p_this)
     printf("[SIMONE] The sequence will be repeated \n");
 }
 
+/**
+ * @brief This function handles the case when the wildcard has been used this level
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
 static void do_wildcard_used(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -718,6 +769,11 @@ static void do_wildcard_used(fsm_t *p_this)
     printf("[SIMONE] You have used the wildcard this level, play the sequence \n");
 }
 
+/**
+ * @brief this function handles the stop of the playback
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
 static void do_stop_playback(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -730,6 +786,11 @@ static void do_stop_playback(fsm_t *p_this)
     printf("[SIMONE] The game has stopped, press shortly the button to resume \n");
 }
 
+/**
+ * @brief This function resumes the playback where it was paused
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
+ */
 static void do_resume_playback(fsm_t *p_this)
 {
     fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
@@ -775,7 +836,10 @@ static void do_resume_playback(fsm_t *p_this)
     printf("[SIMONE] The game has ressumed where you left it \n");
 }
 
-
+/**
+ * @brief Array representing the transitions table of the simone game. 
+ * 
+ */
 fsm_trans_t fsm_trans_simone[] = {
     {IDLE,                  check_on,                       ADD_COLOR,              do_init_game},
     {IDLE,                  check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
@@ -802,6 +866,16 @@ fsm_trans_t fsm_trans_simone[] = {
     {-1,                    NULL,                           -1,                     NULL}
 };
 
+/**
+ * @brief This function initializes the default values of the FSM struct.
+ * 
+ * @param p_fsm_simone Pointer to the simone FSM. 
+ * @param p_fsm_button  Pointer to the button FSM. 
+ * @param on_off_press_time_ms Time in ms to consider ON/IDLE
+ * @param p_fsm_keyboard   Pointer to the Keyboard FSM. 
+ * @param p_fsm_rgb_light Pointer to the RGB light FSM. 
+ * @param level Difficulty level of the game
+ */
 static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
 {
     /*start fsm struc*/
@@ -821,6 +895,7 @@ static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_butt
 
 }
 
+/* Public functions -----------------------------------------------------------*/
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level)
 {
     fsm_simone_t *p_fsm_simone = malloc(sizeof(fsm_simone_t)); /* Do malloc to reserve memory of all other FSM elements, although it is interpreted as fsm_t (the first element of the structure) */

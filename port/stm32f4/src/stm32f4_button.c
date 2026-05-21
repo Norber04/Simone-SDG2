@@ -1,9 +1,9 @@
 /**
  * @file stm32f4_button.c
  * @brief Portable functions to interact with the button FSM library. All portable functions must be implemented in this file.
- * @author n.delosrios@alumnos.upm.es   
- * @author alejandro.suarez@alumnos.upm.es
- * @date fecha
+ * @author Norberto de los Rios Gutierrez 
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -16,13 +16,15 @@
 #include "stm32f4_system.h"
 
 
-/* Microcontroller dependent includes */
-// TO-DO alumnos: include the necessary files to interact with the GPIOs
+/* Microcontroller dependent includes */\
 
 
 /* Global variables ------------------------------------------------------------*/
 
-
+/**
+ * @brief This is an extern variable that is defined in stm32f4_button.c. It represents an array of hardware buttons.
+ * 
+ */
 stm32f4_button_hw_t buttons_arr[] = {
     [PORT_USER_BUTTON_ID] = {.p_port = STM32F4_USER_BUTTON_GPIO,
                              .pin = STM32F4_USER_BUTTON_PIN,

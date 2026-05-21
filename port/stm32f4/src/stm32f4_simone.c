@@ -1,9 +1,9 @@
 /**
  * @file stm32f4_simone.c
  * @brief Portable functions to interact with the Simone FSM library. All portable functions must be implemented in this file.
- * @author alumno1
- * @author alumno2
- * @date fecha
+ * @author Norberto de los Rios Gutierrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 
 /* Standard C includes */
@@ -23,6 +23,10 @@
 stm32f4_simone_hw_t simone_hw;
 
 /* Private functions ----------------------------------------------------------*/
+/**
+ * @brief This function is called by the port_simone_init() public function to configure the timer that controls the duration of the different events of the game.
+ * 
+ */
 static void _timer_simone_setup()
 {
     /*Enable the clock of the timer that controls the column scanning.*/
@@ -41,6 +45,7 @@ static void _timer_simone_setup()
     NVIC_EnableIRQ(TIM3_IRQn);
 }
 
+/* Public functions ------------------------------------------------------------*/
 void port_simone_set_timer_timeout(uint32_t duration_ms)
 {
     /*Disable the counter of the timer*/
@@ -91,7 +96,6 @@ void port_simone_set_timeout_status(bool status)
 
 void port_simone_init(void)
 {
-    /* TODO students: */
     // 1. Reset the flag of the timer timeout
     port_simone_set_timeout_status(false);
     // 2. Configure the timer that controls the duration of the different aspects of the game

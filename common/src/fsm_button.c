@@ -3,7 +3,7 @@
  * @brief Button FSM main file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date fecha
+ * @date 22/05/2026
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -43,11 +43,12 @@ static bool check_button_released (fsm_t *p_this)
     fsm_button_t *p_button =(fsm_button_t *)p_this;
     return !port_button_get_pressed(p_button->button_id);
 }
+
 /**
  * @brief Check if the debounce-time has passed. 
  * 
  * @param p_this Pointer to an fsm_t struct than contains an fsm_button_t
- * @return true 
+ * @return true  the debounce-time has passed
  * @return false 
  */
 static bool check_timeout(fsm_t *p_this)
@@ -83,7 +84,10 @@ static void do_set_duration(fsm_t *p_this)
     p_button->next_timeout = port_system_get_millis() + p_button->debounce_time_ms;
 }
 
-
+/**
+ * @brief Array representing the transitions table of the FSM button. 
+ * 
+ */
 static fsm_trans_t fsm_trans_button[] = {
     {BUTTON_RELEASED,   check_button_pressed,  BUTTON_PRESSED_WAIT,    do_store_tick_pressed},
     {BUTTON_PRESSED_WAIT,   check_timeout,   BUTTON_PRESSED, NULL},
@@ -93,11 +97,18 @@ static fsm_trans_t fsm_trans_button[] = {
 };
 
 /* Other auxiliary functions */
+
+/**
+ * @brief This function initializes the default values of the FSM struct and calls to the port to initialize the associated HW given the ID.
+ * 
+ * @param p_fsm_button Pointer to the button FSM. 
+ * @param debounce_time Anti-debounce time in milliseconds 
+ * @param button_id 	Unique button identifier numbe
+ */
 void fsm_button_init(fsm_button_t *p_fsm_button, uint32_t debounce_time, uint8_t button_id)
 {
     fsm_init(&p_fsm_button->f, fsm_trans_button);
 
-    /* TODO alumnos: */
     p_fsm_button->debounce_time_ms=debounce_time;
     p_fsm_button->button_id = button_id;
 
@@ -128,7 +139,7 @@ void fsm_button_destroy(fsm_button_t *p_fsm)
 
 uint32_t fsm_button_get_duration (fsm_button_t *p_fsm)
 {
-        return p_fsm->duration;
+    return p_fsm->duration;
 }
 
 

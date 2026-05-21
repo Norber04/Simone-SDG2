@@ -1,9 +1,9 @@
 /**
  * @file fsm_rgb_light.c
  * @brief RGB light system FSM main file.
- * @author alumno1
- * @author alumno2
- * @date fecha
+ * @author Norberto de los Ríos Gutiérrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -22,6 +22,12 @@
 
 /* Private functions -----------------------------------------------------------*/
 
+/**
+ * @brief This function takes a regular color and applies a reduction based on the given intensity.
+ * 
+ * @param p_color Pointer to the color to be corrected. 
+ * @param intensity_perc Linear input intensity, in the range [0, 100]. 
+ */
 void _correct_rgb_light_levels	(rgb_color_t * p_color, uint8_t intensity_perc )
 {
     p_color->r = (uint8_t)((((float)p_color->r * intensity_perc) / 100.0f) + 0.5f);
@@ -29,20 +35,40 @@ void _correct_rgb_light_levels	(rgb_color_t * p_color, uint8_t intensity_perc )
     p_color->b = (uint8_t)((((float)p_color->b * intensity_perc) / 100.0f) + 0.5f);
 }		
 /* State machine input or transition functions */
+
+/**
+ * @brief Check if the RGB light is set to be active (ON), independently if it is idle or not. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ * @return true If the RGB light system has been indicated to be active independently if it is idle or not. 
+ * @return false If the RGB light system has been indicated to be inactive. 
+ */
 static bool check_active(fsm_t * p_this)
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
     return p_rgb_light->status;
 }	
 
-
+/**
+ * @brief Check if the RGB light is set to be inactive (OFF). 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ * @return true If the RGB light system has been indicated to be inactive. 
+ * @return false If the RGB light system has been indicated to be active. 
+ */
 static bool check_off(fsm_t * p_this)
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
     return !p_rgb_light->status;
 }
 
-
+/**
+ * @brief Check if a new color has to be set. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ * @return true If a new color has to be set 
+ * @return false If a new color does not have to be set 
+ */
 static bool check_set_new_color	(fsm_t * p_this)
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
@@ -51,7 +77,11 @@ static bool check_set_new_color	(fsm_t * p_this)
 
 /* State machine output or action functions */
 
-
+/**
+ * @brief Set the color of the RGB LED according to the intensity measured by the ultrasound sensor. 
+ * 
+ * @param p_this 	Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ */
 static void do_set_color(fsm_t * p_this)
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
@@ -61,6 +91,11 @@ static void do_set_color(fsm_t * p_this)
     p_rgb_light->idle = true;
 }
 
+/**
+ * @brief Turn the RGB light system OFF. 
+ * 
+ * @param p_this 	Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ */
 static void do_set_off(	fsm_t * p_this)	
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
@@ -68,14 +103,21 @@ static void do_set_off(	fsm_t * p_this)
     p_rgb_light->idle = false;
 }
 
-
+/**
+ * @brief Turn the RGB light system ON for the first time. 
+ * 
+ * @param p_this Pointer to an fsm_t struct than contains an fsm_rgb_light_t. 
+ */
 static void do_set_on(fsm_t * p_this)
 {
     fsm_rgb_light_t *p_rgb_light =(fsm_rgb_light_t *)p_this;
     port_rgb_light_set_rgb(p_rgb_light->rgb_light_id,color_off);
 }
 
-
+/**
+ * @brief Array representing the transitions table of the FSM RGB light. 
+ * 
+ */
 fsm_trans_t fsm_trans_rgb_light[] = {
     {IDLE_RGB,      check_active,           SET_COLOR,      do_set_on},
     {SET_COLOR,     check_set_new_color,    SET_COLOR,      do_set_color},
@@ -83,6 +125,12 @@ fsm_trans_t fsm_trans_rgb_light[] = {
     {-1,            NULL,                   -1,             NULL}
 };
 /* Other auxiliary functions */
+/**
+ * @brief This function initializes the default values of the FSM struct and calls to the port to initialize the associated HW given the ID.
+ * 
+ * @param p_fsm_rgb_light   Pointer to the RGB light FSM. 
+ * @param rgb_light_id      Unique RGB light identifier number. 
+ */
 static void fsm_rgb_light_init(	fsm_rgb_light_t * p_fsm_rgb_light, uint8_t rgb_light_id)
 {
     fsm_init(&p_fsm_rgb_light->f ,fsm_trans_rgb_light);
@@ -118,9 +166,7 @@ void fsm_rgb_light_set_color_intensity (fsm_rgb_light_t *p_fsm, rgb_color_t colo
     p_fsm->intensity_perc = intensity_perc;
     p_fsm->new_color = true;
 }
-/*This function is used to fire the RGB light FSM. 
-It is used to check the transitions and execute the actions 
-of the RGB light FSM.*/
+
 void fsm_rgb_light_fire (fsm_rgb_light_t *p_fsm)
 {
     fsm_fire(&p_fsm->f);

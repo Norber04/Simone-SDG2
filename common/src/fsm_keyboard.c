@@ -3,7 +3,7 @@
  * @brief Keyboard sensor FSM main file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date fecha
+ * @date 22/05/2026
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -110,7 +110,10 @@ static void do_set_key_value(fsm_t *p_this)
     p_keyboard->key_value = port_keyboard_get_key_value(p_keyboard->keyboard_id);
 }
 
-
+/**
+ * @brief Array representing the transitions table of the FSM keyboard. 
+ * 
+ */
 fsm_trans_t fsm_trans_keyboard[] = {
     {KEYBOARD_RELEASED_WAIT_ROW,    check_row_timeout,      KEYBOARD_RELEASED_WAIT_ROW, do_excite_next_row},
     {KEYBOARD_RELEASED_WAIT_ROW,    check_keyboard_pressed, KEYBOARD_PRESSED_WAIT,      do_store_tick_pressed},

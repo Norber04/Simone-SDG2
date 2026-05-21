@@ -3,7 +3,7 @@
  * @brief Header for stm32f4_button.c file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date fecha
+ * @date 22/05/2026
  */
 #ifndef STM32F4_BUTTON_H_
 #define STM32F4_BUTTON_H_
@@ -25,10 +25,10 @@
  */
 typedef struct
 {
-    GPIO_TypeDef *p_port;
-    uint8_t pin;
-    uint8_t pupd_mode;
-    bool flag_pressed;
+    GPIO_TypeDef *p_port;   /*!< GPIO where the button is connected */
+    uint8_t pin;            /*!< Pin/line where the button is connected */
+    uint8_t pupd_mode;      /*!< Pull-up/Pull-down mode */
+    bool flag_pressed;      /*!< Flag to indicate that the button has been pressed */
 } stm32f4_button_hw_t;
 
 /* Global variables */

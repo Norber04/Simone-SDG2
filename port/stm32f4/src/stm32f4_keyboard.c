@@ -3,7 +3,7 @@
  * @brief Portable functions to interact with the keyboard FSM library. All portable functions must be implemented in this file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date date
+ * @date 22/05/2026
  */
 
 /* Standard C includes */
@@ -98,6 +98,12 @@ stm32f4_keyboard_hw_t * _stm32f4_keyboard_get (uint8_t keyboard_id)
     }
 }
 
+/**
+ * @brief This function configures the timer to generate an internal interrupt to control the duration of a column scanning.
+ * The duration of the column scanning is defined in the PORT_KEYBOARDS_TIMEOUT_MS macro. This function is called by the port_keyboard_init() 
+ * public function to configure the timer that controls the column scanning.
+ * 
+ */
 void _timer_scan_column_config()
 {
     /*Enable the clock of the timer that controls the column scanning.*/

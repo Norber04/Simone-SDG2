@@ -1,9 +1,9 @@
 /**
  * @file stm32f4_rgb_light.c
  * @brief Portable functions to interact with the RGB light system FSM library. All portable functions must be implemented in this file.
- * @author alumno1
- * @author alumno2
- * @date fecha
+ * @author Norberto de los Rios Gutierrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 
 /* Standard C includes */
@@ -23,6 +23,10 @@
 /* Typedefs --------------------------------------------------------------------*/
 
 /* Global variables */
+/**
+ * @brief Array of elements that represents the HW characteristics of the RGB LED of the RGB light systems connected to the STM32F4 platform. 
+ * 
+ */
 stm32f4_rgb_light_hw_t 	rgb_lights_arr [] = {
     [PORT_RGB_LIGHT_ID] = {
         .p_port_red = STM32F4_RGB_LIGHT_R_GPIO,
@@ -35,6 +39,14 @@ stm32f4_rgb_light_hw_t 	rgb_lights_arr [] = {
 };
 
 /* Private functions -----------------------------------------------------------*/
+
+/**
+ * @brief Get the RGB light struct with the given ID. 
+ * 
+ * @param rgb_light_id RGB light id
+ * @return stm32f4_rgb_light_hw_t* Pointer to the RGB light struct. 
+ * @return NULL If the RGB light ID is not valid. 
+ */
 stm32f4_rgb_light_hw_t *_stm32f4_rgb_light_get(uint8_t rgb_light_id)
 {
     if(rgb_light_id < sizeof(rgb_lights_arr) / sizeof(rgb_lights_arr[0])){
@@ -46,6 +58,12 @@ stm32f4_rgb_light_hw_t *_stm32f4_rgb_light_get(uint8_t rgb_light_id)
     }
 }
 
+/**
+ * @brief This function is called by the port_rgb_light_init() public function to configure the 
+ * timer that controls the PWM of the RGB LEDs of the RGB light.
+ * 
+ * @param rgb_light_id RGB light system identifier number. 
+ */
 void _timer_pwm_config (uint8_t rgb_light_id)
 {
     /*Enable the clock of the timer that controls the column scanning.*/

@@ -3,7 +3,7 @@
  * @brief Header for the portable functions to interact with the HW of the RGB light system. The functions must be implemented in the platform-specific code.
  * @author alejandro suarez suarez
  * @author norberto de los rios gutierrez
- * @date fecha
+ * @date 22/05/2026
  */
 #ifndef PORT_RGB_LIGHT_SYSTEM_H_
 #define PORT_RGB_LIGHT_SYSTEM_H_

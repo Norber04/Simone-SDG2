@@ -1,9 +1,9 @@
 /**
  * @file stm32f4_simone.h
  * @brief Header for stm32f4_simone.c file.
- * @author alumno1
- * @author alumno2
- * @date fecha
+ * @author Norberto de los Rios Gutierrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
  */
 #ifndef STM32F4_SIMONE_H_
 #define STM32F4_SIMONE_H_

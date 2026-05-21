@@ -1,3 +1,10 @@
+/**
+ * @file fsm_simone.h
+ * @brief Header for fsm_simone.c file.
+ * @author Norberto de los Rios Gutierrez
+ * @author Alejandro Suarez Suarez
+ * @date 22/05/2026
+ */
 #ifndef FSM_SIMONE_H_
 #define FSM_SIMONE_H_
 
@@ -68,11 +75,33 @@ typedef struct {
     char 	            player_key;                         /*!< Key pressed by the player */
     bool 	            playback_over;                      /*!< Indicate if the playback is over */
     uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
-    bool                wildcard_used;
+    bool                wildcard_used;                      /*!< Flaf that indicates if the wildcard has been used*/
 } fsm_simone_t;
 
+/**
+ * @brief This function creates a new simone FSM.
+ * 
+ * @param p_fsm_button Pointer to the button FSM 
+ * @param on_off_press_time_ms Time in ms to consider ON/IDLE
+ * @param p_fsm_keyboard Pointer to the keyboard FSM 
+ * @param p_fsm_rgb_light Pointer to the RGB light FSM 
+ * @param level Difficulty level of the game
+ * @return fsm_simone_t* pointer to the simone FSM
+ */
 fsm_simone_t *fsm_simone_new(fsm_button_t *p_fsm_button, uint32_t on_off_press_time_ms, fsm_keyboard_t *p_fsm_keyboard, fsm_rgb_light_t *p_fsm_rgb_light, uint8_t level);
+
+/**
+ * @brief This function is used to fire the simone FSM. It is used to check the transitions and execute the actions of the simone FSM.
+ * 
+ * @param p_fsm Pointer to an fsm_simone_t struct. 
+ */
 void fsm_simone_fire(fsm_simone_t *p_fsm);
+
+/**
+ * @brief This function destroys an RGB light FSM and frees the memory. 
+ * 
+ * @param p_fsm Pointer to an fsm_simone_t struct. 
+ */
 void fsm_simone_destroy(fsm_simone_t *p_fsm);
 
 #endif /* FSM_SIMONE_H_ */

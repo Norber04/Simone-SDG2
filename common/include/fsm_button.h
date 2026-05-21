@@ -3,7 +3,7 @@
  * @brief Header for fsm_button.c file.
  * @author Norberto de los Rios Gutierrez
  * @author Alejandro Suarez Suarez
- * @date fecha
+ * @date 22/05/2026
  */
 
 #ifndef FSM_BUTTON_H_
@@ -39,8 +39,28 @@ typedef struct
 
 
 /* Function prototypes and explanation -------------------------------------------------*/
+
+/**
+ * @brief This function creates a new button FSM with the given debounce time and button ID.
+ * 
+ * @param debounce_time_ms 	Debounce time in milliseconds. 
+ * @param button_id     Button ID. Must be unique. 
+ * @return fsm_button_t*    Pointer to the button FSM. 
+ */
 fsm_button_t * 	fsm_button_new (uint32_t debounce_time_ms, uint8_t button_id);
+
+/**
+ * @brief This function destroys a button FSM and frees the memory.
+ * 
+ * @param p_fsm Pointer to an fsm_button_t struct. 
+ */
 void 	fsm_button_destroy (fsm_button_t *p_fsm);
+
+/**
+ * @brief This function is used to fire the button FSM. It is used to check the transitions and execute the actions of the button FSM.
+ * 
+ * @param p_fsm 	Pointer to an fsm_button_t struct. 
+ */
 void 	fsm_button_fire (fsm_button_t *p_fsm);
 
 /**
@@ -66,6 +86,13 @@ void 	fsm_button_reset_duration (fsm_button_t *p_fsm);
  */
 uint32_t 	fsm_button_get_debounce_time_ms (fsm_button_t *p_fsm);
 
+/**
+ * @brief Check if the button FSM is active, or not. 
+ * 
+ * @param p_fsm Pointer to an fsm_button_t struct. 
+ * @return true when the button is not in the status BUTTON_RELEASED.
+ * @return false when the button is in the status BUTTON_RELEASED.
+ */
 bool fsm_button_check_activity (fsm_button_t *p_fsm);
 
 #endif
