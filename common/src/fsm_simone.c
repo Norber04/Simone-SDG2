@@ -290,7 +290,7 @@ static bool check_input_valid (fsm_t *p_this)
     if (port_simone_get_timeout_status())
     {
         /*return true if the player key is equal to the light*/
-        if (p_simone->player_key == _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]) && p_simone->player_key!= KEY_WILDCARD)
+        if (p_simone->player_key == _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
         {
             return true;
         }
@@ -313,57 +313,13 @@ static bool check_input_invalid (fsm_t *p_this)
     if (port_simone_get_timeout_status())
     {
         /*return false if the player key is equal to the light*/
-        if (p_simone->player_key != _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]) && p_simone->player_key!= KEY_WILDCARD)
+        if (p_simone->player_key != _get_key_from_color(p_simone->seq_colors[p_simone->player_idx]))
         {
             return true;
         }
     }
     return false;
 
-}
-
-/**
- * @brief This function checks if the wildcard has not been used this round
- * 
- * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
- * @return true if the player key is equal to '*' and the wildcard has not been used this level
- * @return false 
- */
-static bool check_wildcard_unused(fsm_t *p_this)
-{
-    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    /*check if the input feedback has finished */
-    if (port_simone_get_timeout_status())
-    {
-        /*return true if the player key is equal to '*' and the wildcard has not been used this level*/
-        if (p_simone->player_key == KEY_WILDCARD && p_simone->wildcard_used == false)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * @brief This function checks if the wildcard has been used this round
- * 
- * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
- * @return true if the player key is equal to '*' and the wildcard has been used this level
- * @return false 
- */
-static bool check_wildcard_used(fsm_t *p_this)
-{
-    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    /*check if the input feedback has finished */
-    if (port_simone_get_timeout_status())
-    {
-        /*return true if the player key is equal to '*' and the wildcard has been used this level*/
-        if (p_simone->player_key == KEY_WILDCARD && p_simone->wildcard_used == true)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 /**
@@ -434,9 +390,6 @@ static void do_init_game(fsm_t *p_this)
 
     /*set the light to active*/
     p_simone->p_fsm_rgb_light->status = true;
-
-    /*set the wildcard flag*/
-    p_simone->wildcard_used = false;
 
     printf("[SIMONE][%ld] Simone game INIT\n", port_system_get_millis());
 }
@@ -636,9 +589,8 @@ void do_add_color (fsm_t *p_this)
         }
         /*reset seq_idx*/
         p_simone->seq_idx = 0;
-        /*reset wildcard flag*/
-        p_simone->wildcard_used = false;
-        printf("[SIMONE] The difficulty has increased to [%d], you have 1 wildcard \n", p_simone->level);
+
+        printf("[SIMONE] The difficulty has increased to [%d] \n", p_simone->level);
     }
     _add_color(p_simone);
     
@@ -704,70 +656,6 @@ static void do_game_over_invalid_key(fsm_t *p_this)
     fsm_keyboard_stop_scan(p_simone->p_fsm_keyboard);
 }
 
-/**
- * @brief This function handles the repetition of the playback of the sequence 
- * 
- * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
- */
-static void do_wildcard(fsm_t *p_this)
-{
-    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    //reset playback index
-    p_simone->playback_idx = 0;
-    
-    /*get color and intensity from arrays*/
-    rgb_color_t color = p_simone->seq_colors[p_simone->playback_idx];
-    uint8_t intensity = p_simone->seq_intensities[p_simone->playback_idx];
-    /*set color and intensity*/
-    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color,intensity);
-    /*select on duration depending on difilculty*/
-    uint32_t tim;
-    switch (p_simone->level)
-    {
-    case LEVEL_EASY:
-        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
-        break;
-    case LEVEL_MEDIUM:
-        tim = SIMONE_TIME_ON_LEVEL_MEDIUM_MS;
-        break;
-    case LEVEL_HARD:
-        tim = SIMONE_TIME_ON_LEVEL_HARD_MS;
-        break;
-    default:
-        tim = SIMONE_TIME_ON_LEVEL_EASY_MS;
-        break;
-    }
-    port_simone_set_timer_timeout(tim);
-
-    /*set playback over*/
-    p_simone->playback_over = true;
-
-    /*set the wildcard flag*/
-    p_simone->wildcard_used = true;
-    printf("[SIMONE] The sequence will be repeated \n");
-}
-
-/**
- * @brief This function handles the case when the wildcard has been used this level
- * 
- * @param p_this Pointer to an fsm_t struct than contains an fsm_simone_t.
- */
-static void do_wildcard_used(fsm_t *p_this)
-{
-    fsm_simone_t *p_simone =(fsm_simone_t *)p_this;
-    /*reset playback_over flag*/
-    p_simone->playback_over = false;
-    p_simone->playback_idx = 0;
-    /*reset player index*/
-    p_simone->player_idx = 0;
-    /*set off the led*/
-    fsm_rgb_light_set_color_intensity(p_simone->p_fsm_rgb_light,color_off,0);
-    /*set timeout*/
-    port_simone_set_timer_timeout(SIMONE_TIME_WAIT_INPUT_MS);
-    /*start keyboard scanning*/
-    fsm_keyboard_start_scan(p_simone->p_fsm_keyboard);
-    printf("[SIMONE] You have used the wildcard this level, play the sequence \n");
-}
 
 /**
  * @brief this function handles the stop of the playback
@@ -855,8 +743,6 @@ fsm_trans_t fsm_trans_simone[] = {
     {WAIT_KEY,              check_any_key_pressed,          VERIFY_INPUT,           do_capture_input},
     {VERIFY_INPUT,          check_input_valid,              WAIT_KEY,               do_valid_key},
     {VERIFY_INPUT,          check_input_invalid,            IDLE,                   do_game_over_invalid_key},
-    {VERIFY_INPUT,          check_wildcard_unused,          PLAYBACK,               do_wildcard},
-    {VERIFY_INPUT,          check_wildcard_used,            WAIT_KEY,               do_wildcard_used},
     {SLEEP_WHILE_IDLE,      check_no_activity,              SLEEP_WHILE_IDLE,       do_sleep_idle},
     {SLEEP_WHILE_IDLE,      check_activity,                 IDLE,                   NULL},
     {SLEEP_WHILE_PLAYBACK,  check_playback_color_timeout,   PLAYBACK,               do_playback},
@@ -887,7 +773,6 @@ static void fsm_simone_init(fsm_simone_t *p_fsm_simone, fsm_button_t *p_fsm_butt
     p_fsm_simone->p_fsm_rgb_light = p_fsm_rgb_light;
     p_fsm_simone->on_off_press_time_ms = on_off_press_time_ms;
     p_fsm_simone->level = level;
-    p_fsm_simone->wildcard_used = false;
     /*set the seed*/
     srand(time(NULL));
 

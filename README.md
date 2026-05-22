@@ -119,16 +119,9 @@ simone/
 
 ---
 
-## Demostración en vídeo de V5
-
-[![Demo Simone](docs/assets/imgs/demo.png)](https://youtu.be/-9pPiyt7cc8)
-
-
----
-
 # Modo de juego
 
-Se pulsa el botón de usuario 1 segundo para encender el sistema y comenzará la reproduccion de la secuencia, tras esta tendrá que introducir la secuencia con el teclado. En el caso de querer repetirla puede pulsar la tecla **wildcard** para que se vuelva a reproducir, esto solo lo puede hacer 1 vez por nivel. Al superar la prueba con 5 colores se pasará al nivel siguiente, hasta completar el dicifil donde habrá ganado el juego.
+Se pulsa el botón de usuario 1 segundo para encender el sistema y comenzará la reproduccion de la secuencia, tras esta tendrá que introducir la secuencia con el teclado. Al superar la prueba con 5 colores se pasará al nivel siguiente, hasta completar el dicifil donde habrá ganado el juego.
 
 | Tecla        | Color        |
 |--------------|--------------|
@@ -138,7 +131,6 @@ Se pulsa el botón de usuario 1 segundo para encender el sistema y comenzará la
 | 3            | Azul         |
 | 5            | Amarillo     |
 | 8            | Turquesa     |
-| *            | Wildcard     |
 
 ---
 
@@ -210,15 +202,6 @@ Integración de pausa del playback de la secuencia:
 - Al pulsar el botón de usuario un tiempo menor al de encendido el sistema entra en pausa, al volver a pulsarlo sale del estado.
 
 ![FSM V4bis](docs/assets/imgs/FSMv4bis.jpeg)
-
----
-
-## Version 5
-
-Funcionalidades avanzadas y mejoras adicionales:
-
-- Implementacion del botón '*' como wildcard, permite repetir la secuencia de playback una vez por nivel
-![FSM V5](docs/assets/imgs/FSMv5.jpeg)
 
 ---
 

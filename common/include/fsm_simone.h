@@ -26,7 +26,6 @@
 #define KEY_YELLOW '5'
 #define KEY_TURQUOISE '8'
 #define KEY_WHITE '0'
-#define KEY_WILDCARD '*'
 #define KEY_INVALID_COLOR ' '
 
 // Intensities
@@ -85,7 +84,6 @@ typedef struct {
     char 	            player_key;                         /*!< Key pressed by the player */
     bool 	            playback_over;                      /*!< Indicate if the playback is over */
     uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
-    bool                wildcard_used;                      /*!< Flaf that indicates if the wildcard has been used*/
 } fsm_simone_t;
 
 /* Function prototypes and explanation -------------------------------------------------*/
