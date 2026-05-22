@@ -15,6 +15,10 @@
 #include "fsm_keyboard.h"
 #include "fsm_rgb_light.h"
 
+/* Defines and enums ----------------------------------------------------------*/
+
+/* Defines */
+
 // Keys
 #define KEY_RED '1'
 #define KEY_GREEN '2'
@@ -43,7 +47,7 @@
 #define SIMONE_TIME_ON_LEVEL_HARD_MS 1000
 #define SIMONE_TIME_WAIT_INPUT_MS 5000
 
-
+/* Enums */
 enum FSM_SIMONE {
     IDLE = 0,
     ADD_COLOR,
@@ -61,6 +65,12 @@ enum LEVELS {
     LEVEL_HARD
 };
 
+/* Typedefs --------------------------------------------------------------------*/
+
+/**
+ * @brief Structure to define the FSM of a simone
+ * 
+ */
 typedef struct {
     fsm_t               f;                                  /*!<Simone FSM  */
     fsm_button_t        * p_fsm_button;                     /*!< Pointer to the button FSM */
@@ -77,6 +87,8 @@ typedef struct {
     uint32_t            on_off_press_time_ms;               /*!< Time in ms to consider ON/IDLE */
     bool                wildcard_used;                      /*!< Flaf that indicates if the wildcard has been used*/
 } fsm_simone_t;
+
+/* Function prototypes and explanation -------------------------------------------------*/
 
 /**
  * @brief This function creates a new simone FSM.

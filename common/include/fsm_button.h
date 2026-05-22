@@ -27,6 +27,11 @@ enum FSM_BUTTON {
 };
 
 /* Typedefs --------------------------------------------------------------------*/
+
+/**
+ * @brief Structure to define the FSM of a button
+ * 
+ */
 typedef struct 
 {
     fsm_t 	f;                      /*!< Button FSM */

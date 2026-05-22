@@ -13,17 +13,24 @@
 /* Standard C includes */
 #include <stdint.h>
 #include <stdbool.h>
-/* Defines and enums ----------------------------------------------------------*/
 #include "fsm.h"
 #include "rgb_colors.h"
+
+/* Defines and enums ----------------------------------------------------------*/
 /* Enums */
 enum  	FSM_RGB_LIGHT_SYSTEM {
     IDLE_RGB = 0,
     SET_COLOR
 };
-/* Defines and enums ----------------------------------------------------------*/
+/* Defines */
 #define MAX_LEVEL_INTENSITY 100
+
 /* Typedefs --------------------------------------------------------------------*/
+
+/**
+ * @brief Structure to define the FSM of a RGB light
+ * 
+ */
 typedef struct 
 {
     fsm_t f;                    /*!< RGB light system FSM */

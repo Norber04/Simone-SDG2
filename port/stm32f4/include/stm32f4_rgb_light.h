@@ -17,6 +17,10 @@
 /* Defines and enums ----------------------------------------------------------*/
 /* Defines */
 
+/**
+ * @brief 	Structure to define the HW dependencies of a RGB Light
+ * 
+ */
 typedef struct{
     GPIO_TypeDef * 	p_port_red;     /*!< GPIO where the RED LED is connected */
     uint8_t 	pin_red;            /*!< Pin/line where the RED LED is connected */

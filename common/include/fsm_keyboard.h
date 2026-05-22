@@ -23,6 +23,11 @@ enum  	FSM_KEYBOARD {
   KEYBOARD_PRESSED_WAIT
 };
 /* Typedefs --------------------------------------------------------------------*/
+
+/**
+ * @brief Structure to define the FSM of a keyboard
+ * 
+ */
 typedef struct 
 {
     fsm_t 	f;                      /*!< Keyboard FSM */

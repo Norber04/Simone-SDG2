@@ -17,6 +17,10 @@
 #include "keyboards.h"
 /* Defines and enums ----------------------------------------------------------*/
 /* Defines */
+/**
+ * @brief 	Structure to define the HW dependencies of a keyboard 
+ * 
+ */
 typedef struct
 {
     const keyboard_t *p_keyboard;       /*!< Pointer to the keyboard structure */
