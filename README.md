@@ -121,11 +121,8 @@ simone/
 
 ## Demostración en vídeo de V5
 
-Ejemplo:
+[![Demo Simone](docs/assets/imgs/demo.png)](https://youtu.be/-9pPiyt7cc8)
 
-```markdown
-[![Demo Simone](docs/assets/imgs/demo.png)](https://youtu.be/ID_DEL_VIDEO "Demostración del proyecto Simone")
-```
 
 ---
 
@@ -133,6 +130,15 @@ Ejemplo:
 
 Se pulsa el botón de usuario 1 segundo para encender el sistema y comenzará la reproduccion de la secuencia, tras esta tendrá que introducir la secuencia con el teclado. En el caso de querer repetirla puede pulsar la tecla **wildcard** para que se vuelva a reproducir, esto solo lo puede hacer 1 vez por nivel. Al superar la prueba con 5 colores se pasará al nivel siguiente, hasta completar el dicifil donde habrá ganado el juego.
 
+| Tecla        | Color        |
+|--------------|--------------|
+| 0            | Blanco       |
+| 1            | Rojo         |
+| 2            | Verde        |
+| 3            | Azul         |
+| 5            | Amarillo     |
+| 8            | Turquesa     |
+| *            | Wildcard     |
 ---
 
 # Versiones del proyecto
@@ -146,6 +152,8 @@ Implementación inicial del proyecto y configuración básica del sistema:
 - Configuración de GPIOs.
 - Implementación del temporizador SysTick.
 - Funciones básicas de temporización y manejo del hardware.
+- [FSM de Version 1](fsm__button_8c.html)
+![FSM Boton](docs/assets/imgs/v1_fsm.png)
 
 ---
 
@@ -158,6 +166,9 @@ Implementación del teclado matricial 4x4:
 - Captura y decodificación de teclas.
 - FSM de control del teclado.
 - Integración hardware del keypad.
+- [FSM de Version 2](fsm__keyboard_8c.html)
+![FSM Teclado](docs/assets/imgs/v2_fsm.png)
+![Montaje teclado](docs/assets/imgs/teclado.png)
 
 ---
 
@@ -170,7 +181,9 @@ Implementación del sistema visual mediante LED RGB:
 - Representación visual de secuencias.
 - Feedback visual al usuario.
 - Integración del módulo RGB con el sistema.
-
+- [FSM de Version 3](fsm__rgb__light_8c.html)
+![FSM Led](docs/assets/imgs/v3_fsm.png)
+![Montaje Led](docs/assets/imgs/led.png)
 ---
 
 ## Version 4
@@ -185,6 +198,7 @@ Integración completa del juego Simone:
 - Gestión de errores y reinicio de partida.
 - Integración completa de FSMs.
 - Optimización y modos de bajo consumo.
+- [FSM de Version 4](fsm__simone_8c.html)
 
 ---
 
@@ -193,6 +207,7 @@ Integración completa del juego Simone:
 Integración de pausa del playback de la secuencia:
 - Al pulsar el botón de usuario un tiempo menor al de encendido el sistema entra en pausa, al volver a pulsarlo sale del estado.
 
+![FSM V4bis](docs/assets/imgs/FSMv4bis.jpeg)
 ---
 
 ## Version 5
@@ -200,7 +215,7 @@ Integración de pausa del playback de la secuencia:
 Funcionalidades avanzadas y mejoras adicionales:
 
 - Implementacion del botón '*' como wildcard, permite repetir la secuencia de playback una vez por nivel
-
+![FSM V5](docs/assets/imgs/FSMv5.jpeg)
 ---
 
 ## Referencias
