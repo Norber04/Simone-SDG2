@@ -20,11 +20,11 @@ El sistema utiliza:
 - El botón de usuario de la placa para controlar el sistema.
 - Temporizadores e interrupciones hardware del microcontrolador STM32F446RE.
 
-This project implements the classic **Simon** memory game on an STM32F4 Nucleo-F446RE board using embedded C programming and finite state machines (FSM).
+This project implements the classic **Simon** memory game on an STM32F4 Nucleo-F446RE board using C programming and finite state machines (FSM).
 
 The system includes:
 
-- A 4x4 matrix keypad for user interaction.
+- A 4x4 matrix keyboard for user interaction.
 - An RGB LED for visual feedback.
 - The onboard user button to control the system.
 - Hardware timers and interrupts from the STM32F446RE microcontroller.
@@ -139,6 +139,7 @@ Se pulsa el botón de usuario 1 segundo para encender el sistema y comenzará la
 | 5            | Amarillo     |
 | 8            | Turquesa     |
 | *            | Wildcard     |
+
 ---
 
 # Versiones del proyecto
@@ -184,6 +185,7 @@ Implementación del sistema visual mediante LED RGB:
 - [FSM de Version 3](fsm__rgb__light_8c.html)
 ![FSM Led](docs/assets/imgs/v3_fsm.png)
 ![Montaje Led](docs/assets/imgs/led.png)
+
 ---
 
 ## Version 4
@@ -208,6 +210,7 @@ Integración de pausa del playback de la secuencia:
 - Al pulsar el botón de usuario un tiempo menor al de encendido el sistema entra en pausa, al volver a pulsarlo sale del estado.
 
 ![FSM V4bis](docs/assets/imgs/FSMv4bis.jpeg)
+
 ---
 
 ## Version 5
@@ -216,6 +219,7 @@ Funcionalidades avanzadas y mejoras adicionales:
 
 - Implementacion del botón '*' como wildcard, permite repetir la secuencia de playback una vez por nivel
 ![FSM V5](docs/assets/imgs/FSMv5.jpeg)
+
 ---
 
 ## Referencias
